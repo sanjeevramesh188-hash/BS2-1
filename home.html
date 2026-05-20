@@ -1,0 +1,406 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="home-container">
+        <div class="navbar">
+            <h2>Welcome, <span id="userEmail"></span></h2>
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+
+        <div class="home-content">
+            <h1>Home Dashboard</h1>
+            <p class="welcome-message">Choose an option below to get started</p>
+            
+            <div class="options-grid">
+                <div class="option-card">
+                    <div class="option-icon">�</div>
+                    <h3>Share Your Bike</h3>
+                    <p>Post your bike for other college students to rent.</p>
+                    <button onclick="showSection('shareBikeSection')" class="btn-option">Share Bike</button>
+                </div>
+
+                <div class="option-card">
+                    <div class="option-icon">🧭</div>
+                    <h3>Find a Bike</h3>
+                    <p>Browse available bikes shared by other students.</p>
+                    <button onclick="showSection('findBikeSection')" class="btn-option">Find Bike</button>
+                </div>
+
+                <div class="option-card">
+                    <div class="option-icon">📩</div>
+                    <h3>My Bookings</h3>
+                    <p>Review requests you sent or received.</p>
+                    <button onclick="showSection('bookingsSection')" class="btn-option">My Bookings</button>
+                </div>
+
+                <div class="option-card">
+                    <div class="option-icon">💳</div>
+                    <h3>Payments</h3>
+                    <p>Track payments for bike sharing and rentals.</p>
+                    <button onclick="showSection('paymentsSection')" class="btn-option">Payments</button>
+                </div>
+            </div>
+
+            <div class="feature-sections">
+                <section id="shareBikeSection" class="feature-section hidden">
+                    <h2>Share Your Bike</h2>
+                    <p>Let other students borrow your bike and earn money.</p>
+                    <form id="shareBikeForm" class="share-form">
+                        <label for="bikeModel">Bike Model</label>
+                        <input type="text" id="bikeModel" placeholder="Enter bike model" required>
+
+                        <label for="originCollege">Origin College</label>
+                        <input list="collegeOptions" type="text" id="originCollege" placeholder="Select origin college" autocomplete="off" required>
+
+                        <label for="destinationCollege">Destination College</label>
+                        <input list="collegeOptions" type="text" id="destinationCollege" placeholder="Select destination college" autocomplete="off" required>
+                        <datalist id="collegeOptions"></datalist>
+
+                        <label for="bikeLocation">Pickup Location / Campus Area</label>
+                        <input type="text" id="bikeLocation" placeholder="Enter pickup location or campus area" autocomplete="off">
+                        <small class="live-location-note">If your pickup point is not listed, enter your live location or exact address.</small>
+
+                        <label for="liveLocation">Live Location / Address (optional)</label>
+                        <input type="text" id="liveLocation" placeholder="Paste live location link or exact address">
+
+                        <label for="bikePrice">Price per Hour</label>
+                        <input type="number" id="bikePrice" min="1" placeholder="Enter price per hour" required>
+
+                        <button type="submit" class="btn-option">Share Bike</button>
+                    </form>
+                    <p class="section-note">Your bike will appear in the available list when shared.</p>
+                </section>
+
+                <section id="findBikeSection" class="feature-section hidden">
+                    <h2>Available Bikes</h2>
+                    <p>Choose a bike shared by students near your college.</p>
+                    <div id="availableBikesArea"></div>
+                </section>
+
+                <section id="bookingsSection" class="feature-section hidden">
+                    <h2>Bookings</h2>
+                    <p>See your rental requests and bike sharing requests.</p>
+                    <div id="bookingsArea"></div>
+                </section>
+
+                <section id="paymentsSection" class="feature-section hidden">
+                    <h2>Payments</h2>
+                    <p>Review payment history and complete pending payments.</p>
+                    <div id="paymentsArea"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Load user email on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('userEmail').textContent = currentUser;
+            renderAvailableBikes();
+            renderBookings();
+            renderPayments();
+        });
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.feature-section');
+            sections.forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            alert('You have been logged out');
+            window.location.href = 'index.html';
+        }
+
+        function getBikes() {
+            return JSON.parse(localStorage.getItem('bikes')) || [];
+        }
+
+        function saveBikes(bikes) {
+            localStorage.setItem('bikes', JSON.stringify(bikes));
+        }
+
+        function getBookings() {
+            return JSON.parse(localStorage.getItem('bookings')) || [];
+        }
+
+        function saveBookings(bookings) {
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+        }
+
+        function getPayments() {
+            return JSON.parse(localStorage.getItem('payments')) || [];
+        }
+
+        function savePayments(payments) {
+            localStorage.setItem('payments', JSON.stringify(payments));
+        }
+
+        const collegeLocations = [
+            'Anna University',
+            'IIT Madras',
+            'SRM University',
+            'Madras Christian College',
+            'Loyola College',
+            'Stella Maris College',
+            "Women's Christian College",
+            'Ethiraj College',
+            'M.O.P. Vaishnav College',
+            'Queen Mary’s College',
+            'Hindustan Institute of Technology and Science',
+            'SSN College of Engineering',
+            'Jeppiaar Engineering College',
+            'Sathyabama University',
+            'NIFT Chennai',
+            'VIT Chennai',
+            'Saveetha Engineering College',
+            'Velammal Engineering College',
+            'R.M.K. Engineering College',
+            'Panimalar Engineering College'
+        ];
+
+        function populateCollegeOptions() {
+            const datalist = document.getElementById('collegeOptions');
+            if (!datalist) return;
+            datalist.innerHTML = collegeLocations.map(college => `<option value="${college}"></option>`).join('');
+        }
+
+        populateCollegeOptions();
+
+        document.getElementById('shareBikeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const currentUser = localStorage.getItem('currentUser');
+            const model = document.getElementById('bikeModel').value.trim();
+            const originCollege = document.getElementById('originCollege').value.trim();
+            const destinationCollege = document.getElementById('destinationCollege').value.trim();
+            const location = document.getElementById('bikeLocation').value.trim();
+            const liveLocation = document.getElementById('liveLocation').value.trim();
+            const pricePerHour = Number(document.getElementById('bikePrice').value);
+
+            if (!model || !originCollege || !destinationCollege || !pricePerHour) {
+                alert('Please fill in all mandatory bike details.');
+                return;
+            }
+
+            const bikes = getBikes();
+            bikes.push({
+                id: Date.now().toString(),
+                owner: currentUser,
+                model,
+                originCollege,
+                destinationCollege,
+                location,
+                liveLocation,
+                pricePerHour,
+                available: true
+            });
+            saveBikes(bikes);
+
+            document.getElementById('shareBikeForm').reset();
+            alert('Your bike is now available to share with other students.');
+            renderAvailableBikes();
+            showSection('findBikeSection');
+        });
+
+        function renderAvailableBikes() {
+            const bikes = getBikes().filter(bike => bike.available);
+            const currentUser = localStorage.getItem('currentUser');
+            const container = document.getElementById('availableBikesArea');
+            if (!container) return;
+
+            if (bikes.length === 0) {
+                container.innerHTML = '<p>No bikes are currently available. Share your bike or check back later.</p>';
+                return;
+            }
+
+            const rows = bikes.map(bike => {
+                const canRequest = bike.owner !== currentUser;
+                return `<div class="bike-card">
+                    <div>
+                        <strong>${bike.model}</strong>
+                        <p><strong>Origin:</strong> ${bike.originCollege}</p>
+                        <p><strong>Destination:</strong> ${bike.destinationCollege}</p>
+                        ${bike.location ? `<p><strong>Pickup area:</strong> ${bike.location}</p>` : ''}
+                        ${bike.liveLocation ? `<p><strong>Live location/address:</strong> ${bike.liveLocation}</p>` : ''}
+                        <p>Owner: ${bike.owner}</p>
+                        <p>Price/hr: ₹${bike.pricePerHour}</p>
+                    </div>
+                    <button ${canRequest ? '' : 'disabled'} onclick="requestBike('${bike.id}')" class="btn-option">
+                        ${canRequest ? 'Request Bike' : 'Your Bike'}
+                    </button>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = rows;
+        }
+
+        function requestBike(bikeId) {
+            const currentUser = localStorage.getItem('currentUser');
+            const bikes = getBikes();
+            const bike = bikes.find(item => item.id === bikeId);
+            if (!bike) {
+                alert('Bike not found.');
+                return;
+            }
+            if (bike.owner === currentUser) {
+                alert('You cannot request your own bike.');
+                return;
+            }
+            const bookings = getBookings();
+            const existing = bookings.find(booking => booking.bikeId === bikeId && booking.requester === currentUser && booking.status === 'Requested');
+            if (existing) {
+                alert('You already requested this bike.');
+                return;
+            }
+
+            bookings.push({
+                id: Date.now().toString(),
+                bikeId,
+                owner: bike.owner,
+                requester: currentUser,
+                status: 'Requested',
+                hours: 1,
+                totalPrice: bike.pricePerHour,
+                createdAt: new Date().toLocaleString()
+            });
+            saveBookings(bookings);
+            alert('Bike request sent. The owner can accept your request.');
+            renderBookings();
+        }
+
+        function renderBookings() {
+            const currentUser = localStorage.getItem('currentUser');
+            const bookings = getBookings();
+            const bikes = getBikes();
+            const bookingsArea = document.getElementById('bookingsArea');
+            if (!bookingsArea) return;
+
+            const myRequests = bookings.filter(b => b.requester === currentUser);
+            const receivedRequests = bookings.filter(b => b.owner === currentUser && b.status === 'Requested');
+            const allBookings = [...receivedRequests, ...myRequests.filter(b => b.owner !== currentUser)];
+
+            if (allBookings.length === 0) {
+                bookingsArea.innerHTML = '<p>No booking activity yet. Request a bike or share your bike to start.</p>';
+                return;
+            }
+
+            const items = allBookings.map(booking => {
+                const bike = bikes.find(item => item.id === booking.bikeId) || {};
+                let actions = '';
+                if (booking.owner === currentUser && booking.status === 'Requested') {
+                    actions = `<button onclick="updateBookingStatus('${booking.id}','Accepted')" class="btn-option">Accept</button>
+                               <button onclick="updateBookingStatus('${booking.id}','Declined')" class="btn-option cancel">Decline</button>`;
+                }
+                if (booking.requester === currentUser && booking.status === 'Accepted') {
+                    actions = `<button onclick="payBooking('${booking.id}')" class="btn-option">Pay ₹${booking.totalPrice}</button>`;
+                }
+                return `<div class="booking-card">
+                    <strong>Bike:</strong> ${bike.model || 'Unknown'}<br>
+                    <strong>From:</strong> ${booking.requester}<br>
+                    <strong>Owner:</strong> ${booking.owner}<br>
+                    <strong>Status:</strong> ${booking.status}<br>
+                    <strong>Price:</strong> ₹${booking.totalPrice}<br>
+                    <strong>Requested:</strong> ${booking.createdAt}<br>
+                    <div class="booking-actions">${actions}</div>
+                </div>`;
+            }).join('');
+
+            bookingsArea.innerHTML = items;
+        }
+
+        function updateBookingStatus(bookingId, newStatus) {
+            const bookings = getBookings();
+            const booking = bookings.find(item => item.id === bookingId);
+            if (!booking) {
+                alert('Booking not found.');
+                return;
+            }
+            booking.status = newStatus;
+            const bikes = getBikes();
+            const bike = bikes.find(item => item.id === booking.bikeId);
+            if (newStatus === 'Accepted') {
+                if (bike) bike.available = false;
+            }
+            if (newStatus === 'Declined') {
+                if (bike) bike.available = true;
+            }
+            saveBikes(bikes);
+            saveBookings(bookings);
+            renderBookings();
+            renderAvailableBikes();
+            alert(`Booking ${newStatus.toLowerCase()} successfully.`);
+        }
+
+        function payBooking(bookingId) {
+            const bookings = getBookings();
+            const booking = bookings.find(item => item.id === bookingId);
+            if (!booking || booking.status !== 'Accepted') {
+                alert('Payment is not available for this booking.');
+                return;
+            }
+            booking.status = 'Paid';
+            saveBookings(bookings);
+
+            const payments = getPayments();
+            payments.push({
+                id: Date.now().toString(),
+                bookingId,
+                payer: booking.requester,
+                receiver: booking.owner,
+                amount: booking.totalPrice,
+                status: 'Completed',
+                date: new Date().toLocaleString()
+            });
+            savePayments(payments);
+
+            const bikes = getBikes();
+            const bike = bikes.find(item => item.id === booking.bikeId);
+            if (bike) bike.available = false;
+            saveBikes(bikes);
+
+            renderBookings();
+            renderPayments();
+            renderAvailableBikes();
+            alert('Payment completed successfully. Enjoy your ride!');
+        }
+
+        function renderPayments() {
+            const currentUser = localStorage.getItem('currentUser');
+            const payments = getPayments();
+            const paymentsArea = document.getElementById('paymentsArea');
+            if (!paymentsArea) return;
+
+            const userPayments = payments.filter(payment => payment.payer === currentUser || payment.receiver === currentUser);
+            if (userPayments.length === 0) {
+                paymentsArea.innerHTML = '<p>No payment history yet. Complete a booking to record a payment.</p>';
+                return;
+            }
+
+            const rows = userPayments.map(payment => `<div class="payment-card">
+                    <p><strong>Amount:</strong> ₹${payment.amount}</p>
+                    <p><strong>From:</strong> ${payment.payer}</p>
+                    <p><strong>To:</strong> ${payment.receiver}</p>
+                    <p><strong>Status:</strong> ${payment.status}</p>
+                    <p><strong>Date:</strong> ${payment.date}</p>
+                </div>`).join('');
+
+            paymentsArea.innerHTML = rows;
+        }
+    </script>
+</body>
+</html>
