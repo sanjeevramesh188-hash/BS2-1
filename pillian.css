@@ -1,0 +1,54 @@
+* {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+        }
+
+        .pillan-form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 350px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #667eea;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .pillan-form h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .pillan-form input,
+        .pillan-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .pillan-form button {
+            padding: 10px;
+            background-color: white;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pillan-form button:hover {
+            background-color: #8ec5fe;
+            color: white;
+        }
